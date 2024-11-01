@@ -45,7 +45,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/cuda-profiler-api-12.4.127-h57928b3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/cuda-runtime-12.4.1-h7428d3b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/cuda-version-12.4-h3060b56_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/dnspython-2.7.0-pyhff2d567_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.2.2-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/filelock-3.16.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/freetype-2.12.1-hdaf720e_2.conda
@@ -136,7 +135,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.9.2-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/pydantic-core-2.23.4-py312h2615798_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pygments-2.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/win-64/pymongo-4.10.1-py312h275cf98_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pysocks-1.7.1-pyh0701188_6.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/win-64/python-3.12.7-hce54a09_0_cpython.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/python_abi-3.12-5_cp312.conda
@@ -174,6 +172,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/22/74/07679c5b9f98a7cb0fc147b1ef1cc1853bc07a4eb9cb5731e24732c5f773/asyncio-3.4.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c3/be/d0d44e092656fe7a06b55e6103cbce807cdbdee17884a5367c68c9860853/dataclasses_json-0.6.7-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/68/1b/e0a87d256e40e8c888847551b20a017a6b98139178505dc7ffb96f04e954/dnspython-2.7.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c8/4c/28602f96a6b5a2cad9ad474906a6eff0c65550bed844ce6c81478589a089/langchain_community-0.3.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ba/15/8192d91f2b27bab26b9fd008a1212b44f4848d07d311777ab6ec0ae7b49a/langchain_ollama-0.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9a/9e/f8f0308b66ff5fcc3b351ffa5fcba19ae725dfeda75d3c673f4427f3fc99/marshmallow-3.23.0-py3-none-any.whl
@@ -181,6 +180,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/2a/e2/5d3f6ada4297caebe1a2add3b126fe800c96f56dbe5d1988a2cbe0b267aa/mypy_extensions-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6a/ca/d22905ac3f768523f778189d38c9c6cd9edf4fa9dd09cb5a3fc57b184f90/ollama-0.3.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/34/19/26bb6bdb9fdad5f0dfce538780814084fb667b4bc37fcb28459c14b8d3b5/pydantic_settings-2.6.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/99/1c/f5108dc39450077556844abfd92b768c57775f85270fc0b1dc834ad18113/pymongo-4.8.0-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/3e/b68c118422ec867fa7ab88444e1274aa40681c606d59ac27de5a5588f082/python_dotenv-1.0.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5a/71/ec8cdea34ecb90c830ca60d54ac7b509a7b5eab50fae27e001d4470fe813/ruff-0.7.1-py3-none-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/65/f3/107a22063bf27bdccf2024833d3445f4eea42b2e598abfbd46f6a63b6cb0/typing_inspect-0.9.0-py3-none-any.whl
@@ -190,7 +190,7 @@ packages:
   name: aida
   version: 0.1.0
   path: .
-  sha256: 1bf289bb3cafd3bdc29e7dcdad4723ac65435b7d0183b3b16c514624fa8686d1
+  sha256: 5d45d172307d4da454bbaff21d434bf46f79ed67959cde650900b04f912d9923
   requires_dist:
   - ruff>=0.7.1
   - asyncclick>=8.1.7.2
@@ -200,6 +200,7 @@ packages:
   - asyncio>=3.4.3
   - motor>=3.5.1
   - python-dotenv>=1.0.1
+  - pymongo==4.8.0
   requires_python: '>3.8,<3.13'
   editable: true
 - kind: conda
@@ -856,33 +857,34 @@ packages:
   - marshmallow>=3.18.0,<4.0.0
   - typing-inspect>=0.4.0,<1
   requires_python: '>=3.7,<4.0'
-- kind: conda
+- kind: pypi
   name: dnspython
   version: 2.7.0
-  build: pyhff2d567_0
-  subdir: noarch
-  noarch: python
-  url: https://conda.anaconda.org/conda-forge/noarch/dnspython-2.7.0-pyhff2d567_0.conda
-  sha256: 3e2ea1bfd90969e0e1f152bb1f969c56661278ad6bfaa3272027b1ff0d9a1a23
-  md5: 0adf8f63d500d20418656289249533f9
-  depends:
-  - python >=3.9.0,<4.0.0
-  - sniffio
-  constrains:
-  - cryptography >=43
-  - wmi >=1.5.1
-  - h2 >=4.1.0
-  - trio >=0.23
-  - httpcore >=1.0.0
-  - aioquic >=1.0.0
-  - httpx >=0.26.0
-  - idna >=3.7
-  license: ISC
-  license_family: OTHER
-  purls:
-  - pkg:pypi/dnspython?source=hash-mapping
-  size: 172740
-  timestamp: 1728178868478
+  url: https://files.pythonhosted.org/packages/68/1b/e0a87d256e40e8c888847551b20a017a6b98139178505dc7ffb96f04e954/dnspython-2.7.0-py3-none-any.whl
+  sha256: b4c34b7d10b51bcc3a5071e7b8dee77939f1e878477eeecc965e9835f63c6c86
+  requires_dist:
+  - black>=23.1.0 ; extra == 'dev'
+  - coverage>=7.0 ; extra == 'dev'
+  - flake8>=7 ; extra == 'dev'
+  - hypercorn>=0.16.0 ; extra == 'dev'
+  - mypy>=1.8 ; extra == 'dev'
+  - pylint>=3 ; extra == 'dev'
+  - pytest-cov>=4.1.0 ; extra == 'dev'
+  - pytest>=7.4 ; extra == 'dev'
+  - quart-trio>=0.11.0 ; extra == 'dev'
+  - sphinx-rtd-theme>=2.0.0 ; extra == 'dev'
+  - sphinx>=7.2.0 ; extra == 'dev'
+  - twine>=4.0.0 ; extra == 'dev'
+  - wheel>=0.42.0 ; extra == 'dev'
+  - cryptography>=43 ; extra == 'dnssec'
+  - h2>=4.1.0 ; extra == 'doh'
+  - httpcore>=1.0.0 ; extra == 'doh'
+  - httpx>=0.26.0 ; extra == 'doh'
+  - aioquic>=1.0.0 ; extra == 'doq'
+  - idna>=3.7 ; extra == 'idna'
+  - trio>=0.23 ; extra == 'trio'
+  - wmi>=1.5.1 ; extra == 'wmi'
+  requires_python: '>=3.9'
 - kind: conda
   name: exceptiongroup
   version: 1.2.2
@@ -2692,27 +2694,33 @@ packages:
   - pkg:pypi/pygments?source=hash-mapping
   size: 879295
   timestamp: 1714846885370
-- kind: conda
+- kind: pypi
   name: pymongo
-  version: 4.10.1
-  build: py312h275cf98_0
-  subdir: win-64
-  url: https://conda.anaconda.org/conda-forge/win-64/pymongo-4.10.1-py312h275cf98_0.conda
-  sha256: 0268d7d5d37e64c9c1b91a0dbc41a25b691d228e6a9384a3503fec47ec80ec5f
-  md5: 08fc7f5639a691c7e6309e833958b8c2
-  depends:
-  - dnspython <3.0.0,>=1.16.0
-  - python >=3.12,<3.13.0a0
-  - python_abi 3.12.* *_cp312
-  - ucrt >=10.0.20348.0
-  - vc >=14.2,<15
-  - vc14_runtime >=14.29.30139
-  license: Apache-2.0
-  license_family: APACHE
-  purls:
-  - pkg:pypi/pymongo?source=hash-mapping
-  size: 2155290
-  timestamp: 1727859135641
+  version: 4.8.0
+  url: https://files.pythonhosted.org/packages/99/1c/f5108dc39450077556844abfd92b768c57775f85270fc0b1dc834ad18113/pymongo-4.8.0-cp312-cp312-win_amd64.whl
+  sha256: e84bc7707492f06fbc37a9f215374d2977d21b72e10a67f1b31893ec5a140ad8
+  requires_dist:
+  - dnspython<3.0.0,>=1.16.0
+  - pymongo-auth-aws<2.0.0,>=1.1.0 ; extra == 'aws'
+  - furo==2023.9.10 ; extra == 'docs'
+  - readthedocs-sphinx-search~=0.3 ; extra == 'docs'
+  - sphinx-rtd-theme<3,>=2 ; extra == 'docs'
+  - sphinx<8,>=5.3 ; extra == 'docs'
+  - sphinxcontrib-shellcheck<2,>=1 ; extra == 'docs'
+  - certifi ; (sys_platform == 'darwin' and extra == 'encryption') or (os_name == 'nt' and extra == 'encryption')
+  - pymongo-auth-aws<2.0.0,>=1.1.0 ; extra == 'encryption'
+  - pymongocrypt<2.0.0,>=1.6.0 ; extra == 'encryption'
+  - pykerberos ; os_name != 'nt' and extra == 'gssapi'
+  - winkerberos>=0.5.0 ; os_name == 'nt' and extra == 'gssapi'
+  - certifi ; (sys_platform == 'darwin' and extra == 'ocsp') or (os_name == 'nt' and extra == 'ocsp')
+  - cryptography>=2.5 ; extra == 'ocsp'
+  - pyopenssl>=17.2.0 ; extra == 'ocsp'
+  - requests<3.0.0 ; extra == 'ocsp'
+  - service-identity>=18.1.0 ; extra == 'ocsp'
+  - python-snappy ; extra == 'snappy'
+  - pytest>=7 ; extra == 'test'
+  - zstandard ; extra == 'zstd'
+  requires_python: '>=3.8'
 - kind: conda
   name: pysocks
   version: 1.7.1

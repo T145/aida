@@ -1,15 +1,18 @@
 import asyncio
 import os
 import random
+from typing import Any, Dict, List
 
 import asyncclick as click
 import httpx
 from dotenv import dotenv_values
+from pymongo import UpdateOne
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn
 from rich.traceback import install
 
 from .api import signal
+from .api.mongo import AsyncMongoDBSaver
 
 console = Console()
 
@@ -24,6 +27,15 @@ async def my_async_function(progress, task, job_id):
 
 # Main thread controls the terminal output
 
+def _get_signal_group_write_ops(groups: List[Dict[str, Any]]) -> List[UpdateOne]:
+    ops = list()
+    for group in groups:
+        group['members'] = [i for i in group['members'] if i]
+        group_id = group.pop('id')
+        mongo_id = group.pop('internal_id')
+        ops.append(UpdateOne({"_id": mongo_id}, {"$set": {"group_id": group_id, **group}}, upsert=True))
+    return ops
+
 
 @click.command()
 # @click.option("--count", default=1, help="Number of greetings.")
@@ -36,21 +48,29 @@ async def hello():
     transport = httpx.AsyncHTTPTransport(retries=1)
 
     async with httpx.AsyncClient(transport=transport) as client:
-        with Progress(
-            SpinnerColumn(spinner_name='dots12'),
-            "[progress.description]{task.description}",
-            console=console,
-        ) as progress:
-            console.log(await signal.v1_request(client, 'groups'))
-            task = progress.add_task("Waiting for messages...")
-            tasks = [my_async_function(progress, task, job_id) for job_id in range(10)]
+        async with AsyncMongoDBSaver.from_conn_info(
+            host='localhost', port=27017, db_name='checkpoints'
+        ) as checkpointer:
+            with Progress(
+                SpinnerColumn(spinner_name='dots12'),
+                "[progress.description]{task.description}",
+                console=console,
+            ) as progress:
+                signal_db = checkpointer.client['signal']
 
-            for job in asyncio.as_completed(tasks):
-                #job_id, delay = await job
-                await job
-                #console.log("ID: {}, Job's done! {}s".format(job_id, delay))
+                await signal_db['groups'].bulk_write(
+                    _get_signal_group_write_ops(await signal.v1_request(client, 'groups'))
+                )
 
-            progress.stop()
+                task = progress.add_task("Waiting for messages...")
+                tasks = [my_async_function(progress, task, job_id) for job_id in range(10)]
+
+                for job in asyncio.as_completed(tasks):
+                    #job_id, delay = await job
+                    await job
+                    #console.log("ID: {}, Job's done! {}s".format(job_id, delay))
+
+                progress.stop()
 
         console.clear()
         console.log('--- FINISHED ---')
