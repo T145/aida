@@ -1,0 +1,26 @@
+---
+name: aida
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "0.0.0.0"
+volumes:
+  signal-data:
+    labels:
+      com.aida.description: "Signal storage volume"
+services:
+  signal:
+    # https://bbernhard.github.io/signal-cli-rest-api/
+    image: bbernhard/signal-cli-rest-api:latest
+    container_name: signal
+    environment:
+      MODE: json-rpc
+      PORT: 1337
+    ports:
+      - "1337:1337"
+    # healthcheck to http://localhost:1337/v1/health
+    # register: http://localhost:1337/v1/qrcodelink?device_name=aida
+    volumes:
+      - signal-data:/home/.local/share/signal-cli
+...
