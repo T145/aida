@@ -12,6 +12,9 @@ volumes:
   mongo-data:
     labels:
       com.aida.description: "MongoDB storage volume"
+  ollama-data:
+    labels:
+      com.aida.description: "Ollama storage volume"
 services:
   signal:
     # https://bbernhard.github.io/signal-cli-rest-api/
@@ -19,7 +22,7 @@ services:
     container_name: signal
     restart: always
     environment:
-      MODE: json-rpc
+      MODE: native
       PORT: 1337
     ports:
       - "1337:1337"
@@ -50,4 +53,23 @@ services:
       #ME_CONFIG_MONGODB_ADMINPASSWORD: password
       #ME_CONFIG_MONGODB_URL: mongodb://root:password@mongo:27017/
       ME_CONFIG_BASICAUTH: false
+  ollama:
+    build:
+      context: docker
+      dockerfile: aida.Dockerfile
+    container_name: ollama
+    restart: unless-stopped
+    environment:
+      OLLAMA_NOHISTORY: 1 # mongo and langgraph handle this
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 ...

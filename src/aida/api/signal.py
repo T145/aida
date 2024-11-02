@@ -15,15 +15,17 @@ def _base64_encode(bits: bytes) -> str:
 
 
 async def v1_request(
-    client: AsyncClient,
+    http_client: AsyncClient,
     route: str,
-    base_url: str = 'http://localhost',
+    protocol: str = 'http',
+    base_url: str = 'localhost',
     port: int = 1337
 ) -> Any:
-    url = '{}:{}/v1/{}/{}'.format(base_url, port, route, os.environ["PHONE_NUMBER"])
-    r = await client.get(url)
+    url = '{}://{}:{}/v1/{}/{}'.format(protocol, base_url, port, route, os.environ["PHONE_NUMBER"])
+    #headers = { "Connection": "Upgrade", "Upgrade": "websocket" }
+    r = await http_client.get(url)
 
     if r.status_code != 200:
-        raise SignalAPIError('Error when getting {}!'.format(route))
+        raise SignalAPIError('Error when getting {}!'.format(url))
 
     return r.json()

@@ -13,17 +13,17 @@ from rich.traceback import install
 
 from .api import signal
 from .api.mongo import AsyncMongoDBSaver
+from .core import chat
 
 console = Console()
 
-# Important for sreaming files: https://www.python-httpx.org/async/#streaming-requests
+# Important for streaming files: https://www.python-httpx.org/async/#streaming-requests
 
 
 async def my_async_function(progress, task, job_id):
     delay = random.randint(1,3)
     await asyncio.sleep(delay)
     progress.update(task, description="ID: {}, Job's done! {}s".format(job_id, delay), advance=1)
-    #return job_id, delay
 
 # Main thread controls the terminal output
 
@@ -46,8 +46,9 @@ async def hello():
     config = dotenv_values(".env")
     os.environ["PHONE_NUMBER"] = config["PHONE_NUMBER"]
     transport = httpx.AsyncHTTPTransport(retries=1)
+    loop = asyncio.get_event_loop()
 
-    async with httpx.AsyncClient(transport=transport) as client:
+    async with httpx.AsyncClient(transport=transport) as http_client:
         async with AsyncMongoDBSaver.from_conn_info(
             host='localhost', port=27017, db_name='checkpoints'
         ) as checkpointer:
@@ -59,18 +60,60 @@ async def hello():
                 signal_db = checkpointer.client['signal']
 
                 await signal_db['groups'].bulk_write(
-                    _get_signal_group_write_ops(await signal.v1_request(client, 'groups'))
+                    _get_signal_group_write_ops(await signal.v1_request(http_client, 'groups'))
                 )
 
-                task = progress.add_task("Waiting for messages...")
-                tasks = [my_async_function(progress, task, job_id) for job_id in range(10)]
+                aida = await chat.build_graph(checkpointer)
+                config = {'configurable': {'thread_id': '5', 'user_id': '5'}}
+                inputs = {'messages': []}
 
-                for job in asyncio.as_completed(tasks):
-                    #job_id, delay = await job
-                    await job
-                    #console.log("ID: {}, Job's done! {}s".format(job_id, delay))
+                # inputs['messages'].append(HumanMessage(content="Andy: What is the sum of the years when Kevin Costner and Mark Cuban were born?"))
 
-                progress.stop()
+                progress_task = progress.add_task("Waiting for messages...")
+                #tasks = [my_async_function(progress, task, job_id) for job_id in range(10)]
+
+                try:
+                    while True:
+                        await asyncio.sleep(2)
+                        messages = await signal.v1_request(http_client, 'receive')
+
+                        if len(messages) > 0:
+                            console.log('Got {} message{}!'.format(len(messages), 's' if len(messages) > 1 else ''))
+
+                        for dm in messages:
+                            await signal_db['messages2'].insert_one(dm)
+                            dm = dm['envelope']
+                            user = dm['sourceName']
+                            console.log(dm)
+                            await signal_db['messages2'].insert_one(dm)
+
+                            if "syncMessage" in dm:
+                                dm = dm["syncMessage"]
+
+                                if "sentMessage" not in dm:
+                                    continue
+
+                                dm = dm["sentMessage"]
+                            elif "dataMessage" in dm:
+                                dm = dm["dataMessage"]
+                            else:
+                                continue
+
+                            if "message" not in dm:
+                                continue
+
+                            text = dm['message'].strip()
+
+                            if not text:
+                                continue # It's a reaction or multimedia
+
+                            await signal_db['messages'].insert_one(dm)
+                            progress.reset(progress_task)
+                except (asyncio.CancelledError, KeyboardInterrupt):
+                    progress.stop_task(progress_task)
+
+                # for job in asyncio.as_completed(tasks):
+                #     await job
 
         console.clear()
         console.log('--- FINISHED ---')

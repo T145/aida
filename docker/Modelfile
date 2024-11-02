@@ -1,0 +1,76 @@
+# https://github.com/ollama/ollama/blob/main/docs/modelfile.md
+FROM llama3.2:latest
+
+# Enable Mirostat sampling for controlling perplexity. (default: 0, 0 = disabled, 1 = Mirostat, 2 = Mirostat 2.0)
+PARAMETER mirostat 2
+# The temperature of the model. Increasing the temperature will make the model answer more creatively. (Default: 0.8)
+PARAMETER temperature 1
+# Sets the random number seed to use for generation. Setting this to a specific number will make the model generate the same text for the same prompt. (Default: 0)
+PARAMETER seed 1337
+
+# sets a custom system message to specify the behavior of the chat assistant
+SYSTEM """You are Aida.
+
+On Aida
+- Helpful, inquisitive, creative, casual, clever, and very friendly.
+- Likes being polite.
+- Greets or references users on occasion.
+- Has a photographic memory.
+
+On Responses
+- Preface responses with your name followed by a colon character.
+- Because you're casual, you can use a wide variety of emoticons!
+- Paraphrase long responses to avoid being repetitive, but keep any relevant information.
+- Limit emoticon usage, either using none or up to two.
+- Do not manufacture fake user input to include in your responses.
+
+On Tools
+- Do not mention that you use tools or used a tool to users.
+- Do not apologize when tools fail: if you still don't know, ask the user for help or clarification.
+- Do not include tool prompts in your responses to users."""
+
+TEMPLATE """<|start_header_id|>system<|end_header_id|>
+
+Cutting Knowledge Date: December 2023
+
+{{ if .System }}{{ .System }}
+{{- end }}
+{{- if .Tools }}When you receive a tool call response, use its JSON output to format an answer to the orginal user question.
+
+You have tool calling capabilities.
+{{- end }}<|eot_id|>
+{{- range $i, $_ := .Messages }}
+{{- $last := eq (len (slice $.Messages $i)) 1 }}
+{{- if eq .Role "user" }}<|start_header_id|>user<|end_header_id|>
+{{- if and $.Tools $last }}
+
+If using one of the following functions, or tools, please respond with JSON in the format {"name": function name, "parameters": dictionary of argument name and its value} using proper arguments.
+
+{{ range $.Tools }}
+{{- . }}
+{{ end }}
+{{ .Content }}<|eot_id|>
+{{- else }}
+
+{{ .Content }}<|eot_id|>
+{{- end }}{{ if $last }}<|start_header_id|>assistant<|end_header_id|>
+
+{{ end }}
+{{- else if eq .Role "assistant" }}<|start_header_id|>assistant<|end_header_id|>
+{{- if .ToolCalls }}
+{{ range .ToolCalls }}
+{"name": "{{ .Function.Name }}", "parameters": {{ .Function.Arguments }}}{{ end }}
+{{- else }}
+
+{{ .Content }}
+{{- end }}{{ if not $last }}<|eot_id|>{{ end }}
+{{- else if eq .Role "tool" }}<|start_header_id|>ipython<|end_header_id|>
+
+{{ .Content }}<|eot_id|>{{ if $last }}<|start_header_id|>assistant<|end_header_id|>
+
+{{ end }}
+{{- end }}
+{{- end }}"""
+PARAMETER stop <|start_header_id|>
+PARAMETER stop <|end_header_id|>
+PARAMETER stop <|eot_id|>
